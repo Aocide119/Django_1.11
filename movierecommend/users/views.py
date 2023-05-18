@@ -1,7 +1,8 @@
-from django.shortcuts import render, redirect,HttpResponseRedirect
+from django.shortcuts import render, redirect, HttpResponseRedirect
 from .forms import RegisterForm
-from users.models import Resulttable,Insertposter
+from users.models import Resulttable, Insertposter
 from django.db import models
+
 
 def register(request):
     # 只有当请求为 POST 时，才表示用户提交了注册信息
@@ -24,12 +25,17 @@ def register(request):
     # 如果用户通过表单提交注册信息，但是数据验证不合法，则渲染的是一个带有错误信息的表单
     return render(request, 'users/register.html', context={'form': form})
 
+
 def index(request):
     return render(request, 'users/..//index.html')
+
+
 # 为啥？
 
 def check(request):
     return render((request, 'users/..//index.html'))
+
+
 # def showregist(request):
 #     pass
 
@@ -37,18 +43,18 @@ def check(request):
 def showmessage(request):
     usermovieid = []
     usermovietitle = []
-    data=Resulttable.objects.filter(userId=1001)
+    data = Resulttable.objects.filter(userId=1001)
     for row in data:
         usermovieid.append(row.imdbId)
 
     try:
         conn = get_conn()
         cur = conn.cursor()
-        #Insertposter.objects.filter(userId=USERID).delete()
+        # Insertposter.objects.filter(userId=USERID).delete()
         for i in usermovieid:
-            cur.execute('select * from moviegenre3 where imdbId = %s',i)
+            cur.execute('select * from moviegenre3 where imdbId = %s', i)
             rr = cur.fetchall()
-            for imdbId,title,poster in rr:
+            for imdbId, title, poster in rr:
                 usermovietitle.append(title)
                 print(title)
 
@@ -62,29 +68,28 @@ def showmessage(request):
 def recommend1(request):
     USERID = int(request.GET["userIdd"]) + 1000
     Insertposter.objects.filter(userId=USERID).delete()
-    #selectMysql()
-    read_mysql_to_csv('users/static/users_resulttable.csv',USERID)  #追加数据，提高速率
+    # selectMysql()
+    read_mysql_to_csv('users/static/users_resulttable.csv', USERID)  # 追加数据，提高速率
     ratingfile = os.path.join('users/static', 'users_resulttable.csv')
     usercf = UserBasedCF()
-    userid = str(USERID)#得到了当前用户的id
+    userid = str(USERID)  # 得到了当前用户的id
     print(userid)
     usercf.generate_dataset(ratingfile)
     usercf.calc_user_sim()
-    usercf.recommend(userid)    #得到imdbId号
+    usercf.recommend(userid)  # 得到imdbId号
 
-    #先删除所有数据
-
+    # 先删除所有数据
 
     try:
         conn = get_conn()
         cur = conn.cursor()
-        #Insertposter.objects.filter(userId=USERID).delete()
+        # Insertposter.objects.filter(userId=USERID).delete()
         for i in matrix:
-            cur.execute('select * from moviegenre3 where imdbId = %s',i)
+            cur.execute('select * from moviegenre3 where imdbId = %s', i)
             rr = cur.fetchall()
-            for imdbId,title,poster in rr:
-                #print(value)         #value才是真正的海报链接
-                if(Insertposter.objects.filter(title=title)):
+            for imdbId, title, poster in rr:
+                # print(value)         #value才是真正的海报链接
+                if (Insertposter.objects.filter(title=title)):
                     continue
                 else:
                     Insertposter.objects.create(userId=USERID, title=title, poster=poster)
@@ -92,9 +97,9 @@ def recommend1(request):
         # print(poster_result)
     finally:
         conn.close()
-    #results = Insertposter.objects.all()       #从这里传递给html= Insertposter.objects.all()  # 从这里传递给html
+    # results = Insertposter.objects.all()       #从这里传递给html= Insertposter.objects.all()  # 从这里传递给html
     results = Insertposter.objects.filter(userId=USERID)
-    return render(request,'users/movieRecommend.html', locals())
+    return render(request, 'users/movieRecommend.html', locals())
     # return render(request, 'users/..//index.html', locals())
 
 
@@ -102,30 +107,29 @@ def recommend2(request):
     # USERID = int(request.GET["userIddd"]) + 1000
     USERID = 1001
     Insertposter.objects.filter(userId=USERID).delete()
-    #selectMysql()
-    read_mysql_to_csv2('users/static/users_resulttable2.csv',USERID)  #追加数据，提高速率
+    # selectMysql()
+    read_mysql_to_csv2('users/static/users_resulttable2.csv', USERID)  # 追加数据，提高速率
     ratingfile2 = os.path.join('users/static', 'users_resulttable2.csv')
     itemcf = ItemBasedCF()
-    #userid = '1001'
-    userid = str(USERID)#得到了当前用户的id
+    # userid = '1001'
+    userid = str(USERID)  # 得到了当前用户的id
     print(userid)
     itemcf.generate_dataset(ratingfile2)
     itemcf.calc_movie_sim()
-    itemcf.recommend(userid)    #得到imdbId号
+    itemcf.recommend(userid)  # 得到imdbId号
 
-    #先删除所有数据
-
+    # 先删除所有数据
 
     try:
         conn = get_conn()
         cur = conn.cursor()
-        #Insertposter.objects.filter(userId=USERID).delete()
+        # Insertposter.objects.filter(userId=USERID).delete()
         for i in matrix2:
-            cur.execute('select * from moviegenre3 where imdbId = %s',i)
+            cur.execute('select * from moviegenre3 where imdbId = %s', i)
             rr = cur.fetchall()
-            for imdbId,title,poster in rr:
-                #print(value)         #value才是真正的海报链接
-                if(Insertposter.objects.filter(title=title)):
+            for imdbId, title, poster in rr:
+                # print(value)         #value才是真正的海报链接
+                if (Insertposter.objects.filter(title=title)):
                     continue
                 else:
                     Insertposter.objects.create(userId=USERID, title=title, poster=poster)
@@ -133,34 +137,29 @@ def recommend2(request):
         # print(poster_result)
     finally:
         conn.close()
-        results = Insertposter.objects.filter(userId=USERID)       #从这里传递给html= Insertposter.objects.all()  # 从这里传递给html
+        results = Insertposter.objects.filter(userId=USERID)  # 从这里传递给html= Insertposter.objects.all()  # 从这里传递给html
 
-    return render(request, 'users/movieRecommend2.html',locals())
+    return render(request, 'users/movieRecommend2.html', locals())
     # return HttpResponseRedirect('movieRecommend.html', locals())
-
-
-
-
 
 
 def insert(request):
     # MOVIEID = int(request.GET["movieId"])
     global USERID
-    USERID = int(request.GET["userId"])+1000
+    USERID = int(request.GET["userId"]) + 1000
     # USERID = {{}}
     RATING = float(request.GET["rating"])
     IMDBID = int(request.GET["imdbId"])
 
-    Resulttable.objects.create(userId=USERID, rating=RATING,imdbId=IMDBID)
-    #print(USERID)
+    Resulttable.objects.create(userId=USERID, rating=RATING, imdbId=IMDBID)
+    # print(USERID)
     # return HttpResponseRedirect('/')
-    return render(request, 'index.html',{'userId':USERID,'rating':RATING,'imdbId':IMDBID})
-
+    return render(request, 'index.html', {'userId': USERID, 'rating': RATING, 'imdbId': IMDBID})
 
 
 import sys
 import random
-import os,math
+import os, math
 from operator import itemgetter
 import pymysql
 import csv
@@ -169,28 +168,30 @@ import codecs
 
 
 def get_conn():
-    conn = pymysql.connect(host='127.0.0.1', port=3307, user='root', passwd='admin', db='MovieData', charset='utf8')
+    conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='xq12205791117sa', db='test', charset='utf8')
     return conn
+
 
 def query_all(cur, sql, args):
     cur.execute(sql, args)
     return cur.fetchall()
 
-def read_mysql_to_csv(filename,user):
+
+def read_mysql_to_csv(filename, user):
     with codecs.open(filename=filename, mode='w', encoding='utf-8') as f:
         write = csv.writer(f, dialect='excel')
         conn = get_conn()
         cur = conn.cursor()
         cur.execute('select * from users_resulttable')
-        #sql = ('select * from users_resulttable WHERE userId = 1001')
+        # sql = ('select * from users_resulttable WHERE userId = 1001')
         rr = cur.fetchall()
-        #results = query_all(cur=cur, sql=sql, args=None)
+        # results = query_all(cur=cur, sql=sql, args=None)
         for result in rr:
-            #print(result)
+            # print(result)
             write.writerow(result[:-1])
 
 
-def read_mysql_to_csv2(filename,user):
+def read_mysql_to_csv2(filename, user):
     with codecs.open(filename=filename, mode='a', encoding='utf-8') as f:
         write = csv.writer(f, dialect='excel')
         conn = get_conn()
@@ -200,7 +201,7 @@ def read_mysql_to_csv2(filename,user):
         rr = cur.fetchall()
         results = query_all(cur=cur, sql=sql, args=None)
         for result in results:
-            #print(result)
+            # print(result)
             write.writerow(result[:-1])
 
 
@@ -212,8 +213,9 @@ from operator import itemgetter
 
 random.seed(0)
 user_sim_mat = {}
-matrix = []  #全局变量
+matrix = []  # 全局变量
 matrix2 = []
+
 
 class UserBasedCF(object):
     ''' TopN recommendation - User Based Collaborative Filtering '''
@@ -321,10 +323,9 @@ class UserBasedCF(object):
                     len(self.trainset[u]) * len(self.trainset[v]))
                 simfactor_count += 1
 
-
     def recommend(self, user):
         ''' Find K similar users and recommend N movies. '''
-        matrix.clear()   #每次都要清空
+        matrix.clear()  # 每次都要清空
         K = self.n_sim_user  # 这里等于20
         N = self.n_rec_movie  # 这里等于10
         rank = dict()  # 用户对电影的兴趣度
@@ -340,17 +341,17 @@ class UserBasedCF(object):
                     continue  # 如果该电影用户已经看过，则跳过
                 # predict the user's "interest" for each movie
                 rank.setdefault(imdbid, 0)  # 没有值就为0
-                rank[imdbid] += similarity_factor   #rank[movie]就是各个电影的相似度
+                rank[imdbid] += similarity_factor  # rank[movie]就是各个电影的相似度
                 # 这里是把和各个用户的相似度加起来，而各个用户的相似度只是基于看过的公共电影数目除以这两个用户看过的电影数量积
-                #print(rank[movie])
+                # print(rank[movie])
         # return the N best movies
-       # rank_ = dict()
-        rank_ = sorted(rank.items(), key=itemgetter(1), reverse=True)[0:N]  #类型是list不是字典了
-        for key,value in rank_:
-            matrix.append(key)    #matrix为存储推荐的imdbId号的数组
-            #print(key)     #得到了推荐的电影的imdbid号
+        # rank_ = dict()
+        rank_ = sorted(rank.items(), key=itemgetter(1), reverse=True)[0:N]  # 类型是list不是字典了
+        for key, value in rank_:
+            matrix.append(key)  # matrix为存储推荐的imdbId号的数组
+            # print(key)     #得到了推荐的电影的imdbid号
         print(matrix)
-        #return sorted(rank.items(), key=itemgetter(1), reverse=True)[0:N]
+        # return sorted(rank.items(), key=itemgetter(1), reverse=True)[0:N]
         return matrix
 
 
@@ -442,7 +443,6 @@ class ItemBasedCF(object):
                     print('calculating movie similarity factor(%d)' %
                           simfactor_count, file=sys.stderr)
 
-
     def recommend(self, user):
         ''' Find K similar movies and recommend N movies. '''
         K = self.n_sim_movie
@@ -460,14 +460,11 @@ class ItemBasedCF(object):
                 rank[related_movie] += similarity_factor * rating
         # return the N best movies
         rank_ = sorted(rank.items(), key=itemgetter(1), reverse=True)[:N]
-        for key,value in rank_:
-            matrix2.append(key)    #matrix为存储推荐的imdbId号的数组
-            #print(key)     #得到了推荐的电影的imdbid号
+        for key, value in rank_:
+            matrix2.append(key)  # matrix为存储推荐的imdbId号的数组
+            # print(key)     #得到了推荐的电影的imdbid号
         print(matrix2)
         return matrix2
-
-
-
 
 
 #
@@ -480,10 +477,5 @@ if __name__ == '__main__':
     usercf.generate_dataset(ratingfile2)
     usercf.calc_user_sim()
     # usercf.evaluate()
-    usercf.recommend(userId)  
-    # 给用户推荐10部电影  输出的是‘movieId’,兴趣度  
-
-
-
-
-
+    usercf.recommend(userId)
+    # 给用户推荐10部电影  输出的是‘movieId’,兴趣度
